@@ -88,10 +88,10 @@ func ContainsLink(content, rel, title string) bool {
 }
 
 func EnsureLinksSection(content string) string {
-	if strings.Contains(content, "## Links") {
+	if strings.Contains(content, "## Related") {
 		return content
 	}
-	return strings.TrimRight(content, "\n") + "\n\n## Links\n"
+	return strings.TrimRight(content, "\n") + "\n\n## Related\n"
 }
 
 func InsertMarkdownLink(path string, linkTitle string, rel string) error {
@@ -104,4 +104,3 @@ func InsertMarkdownLink(path string, linkTitle string, rel string) error {
 	content += "- [" + linkTitle + "](" + rel + ")\n"
 	return os.WriteFile(path, []byte(content), 0o644)
 }
-
