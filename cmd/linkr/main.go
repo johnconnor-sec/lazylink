@@ -3,10 +3,11 @@ package main
 import (
 	"flag"
 	"fmt"
-	"linkr/internal/notes"
-	"linkr/internal/tui"
 	"os"
 	"path/filepath"
+
+	"github.com/johnconnor-sec/note-linkr/internal/notes"
+	"github.com/johnconnor-sec/note-linkr/internal/tui"
 
 	tea "github.com/charmbracelet/bubbletea"
 )

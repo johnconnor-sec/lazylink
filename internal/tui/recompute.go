@@ -2,9 +2,10 @@ package tui
 
 import (
 	"fmt"
-	"linkr/internal/notes"
 	"path/filepath"
 	"strings"
+
+	"github.com/johnconnor-sec/note-linkr/internal/notes"
 
 	"github.com/charmbracelet/lipgloss"
 )

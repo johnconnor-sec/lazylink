@@ -1,4 +1,4 @@
-module linkr
+module github.com/johnconnor-sec/note-linkr
 
 go 1.25.0
 

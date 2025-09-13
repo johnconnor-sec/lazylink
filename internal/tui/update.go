@@ -2,8 +2,9 @@ package tui
 
 import (
 	"fmt"
-	"linkr/internal/notes"
 	"path/filepath"
+
+	"github.com/johnconnor-sec/note-linkr/internal/notes"
 
 	tea "github.com/charmbracelet/bubbletea"
 )

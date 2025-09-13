@@ -2,7 +2,7 @@
 package tui
 
 import (
-	"linkr/internal/notes"
+	"github.com/johnconnor-sec/note-linkr/internal/notes"
 
 	"github.com/charmbracelet/bubbles/textinput"
 	"github.com/charmbracelet/bubbles/viewport"
