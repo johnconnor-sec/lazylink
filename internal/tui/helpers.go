@@ -1,7 +1,5 @@
 package tui
 
-// Helpers
-// ==============================================
 func clamp(v, lo, hi int) int {
 	if v < lo {
 		return lo

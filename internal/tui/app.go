@@ -16,26 +16,27 @@ const (
 )
 
 type Model struct {
-	vault        string
-	notes        []notes.Note
-	targetIdx    int
-	candidates   []notes.Note
-	leftIdx      int
-	focus        focusArea
-	rightPreview string
-	status       string
-	err          error
+	vault      string
+	notes      []notes.Note
+	targetIdx  int
+	candidates []notes.Note
+	leftIdx    int
+	focus      focusArea
+	status     string
+	err        error
 
-	w, h int
-	vp   viewport.Model
+	w, h    int
+	leftVp  viewport.Model
+	rightVp viewport.Model
 }
 
 func New(vault string, all []notes.Note) Model {
 	m := Model{
-		vault: vault,
-		notes: all,
-		focus: focusLeft,
-		vp:    viewport.Model{Width: 60, Height: 20},
+		vault:   vault,
+		notes:   all,
+		focus:   focusLeft,
+		leftVp:  viewport.Model{Width: 60, Height: 40},
+		rightVp: viewport.Model{Width: 60, Height: 40},
 	}
 	m.recompute()
 	return m
