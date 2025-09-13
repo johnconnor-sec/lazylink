@@ -19,10 +19,17 @@ func (m Model) View() string {
 	err := lipgloss.NewStyle().Foreground(lipgloss.Color("196"))
 
 	header := title.Render("Linkr — Obsidian linker")
-	help := subtle.Render("[↑/k, ↓/j] move  [Enter] link  [n/p] target  [Tab] focus  [r] rescan  [q] quit")
+	help := subtle.Render("[↑/k, ↓/j] move  [Enter] link  [n/p] target  [Tab] focus  [/] search  [r] rescan  [q] quit")
 
 	// left pane
-	leftPane := border.Width(m.w/2 - 2).Height(m.h - 8).Render(m.leftVp.View())
+	var leftContent strings.Builder
+	if m.searchMode {
+		// Show search input when in search mode
+		searchPrompt := subtle.Render("🔍 ")
+		leftContent.WriteString(searchPrompt + m.searchInput.View() + "\n\n")
+	}
+	leftContent.WriteString(m.leftVp.View())
+	leftPane := border.Width(m.w/2 - 2).Height(m.h - 8).Render(leftContent.String())
 
 	// right pane
 	var right strings.Builder

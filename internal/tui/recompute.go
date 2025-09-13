@@ -19,7 +19,7 @@ func (m *Model) recompute() {
 	target := m.notes[m.targetIdx]
 	content := notes.Read(target.Path)
 
-	// Candidates = notes not linked in target
+	// Candidates = notes not linked in target AND matching search query
 	var cands []notes.Note
 	for _, n := range m.notes {
 		if n.Path == target.Path {
@@ -27,7 +27,14 @@ func (m *Model) recompute() {
 		}
 		rel := notes.RelPath(filepath.Dir(target.Path), n.Path)
 		if !notes.ContainsLink(content, rel, n.Title) {
-			cands = append(cands, n)
+			// Apply search filter if search mode is active
+			if m.searchMode && m.searchQuery != "" {
+				if fuzzyMatch(n, m.searchQuery) {
+					cands = append(cands, n)
+				}
+			} else {
+				cands = append(cands, n)
+			}
 		}
 	}
 	m.candidates = cands

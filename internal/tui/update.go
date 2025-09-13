@@ -20,9 +20,17 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.w, m.h = msg.Width, msg.Height
 		m.leftVp.Width = m.w/2 - 4
-		m.leftVp.Height = m.h - 8
 		m.rightVp.Width = m.w - (m.w / 2) - 4
-		m.rightVp.Height = m.h - 8
+
+		// Adjust viewport height based on search mode
+		if m.searchMode {
+			m.leftVp.Height = m.h - 11 // Account for search input (3 lines)
+			m.rightVp.Height = m.h - 8
+		} else {
+			m.leftVp.Height = m.h - 8
+			m.rightVp.Height = m.h - 8
+		}
+
 		m.recompute()
 		return m, nil
 
@@ -45,8 +53,34 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 
-		case "ctrl+c", "q", "esc":
+		case "ctrl+c", "q":
 			return m, tea.Quit
+
+		case "esc":
+			if m.searchMode {
+				// Exit search mode
+				m.searchMode = false
+				m.searchQuery = ""
+				m.searchInput.Reset()
+				m.searchInput.Blur()
+				m.leftVp.Height = m.h - 8 // Reset viewport height
+				m.status = "Search cleared"
+				m.recompute()
+			} else {
+				return m, tea.Quit
+			}
+			return m, nil
+
+		case "/":
+			if !m.searchMode {
+				// Enter search mode
+				m.searchMode = true
+				m.searchInput.Focus()
+				m.leftVp.Height = m.h - 11 // Adjust for search input
+				m.status = "Search mode: type to filter notes"
+				m.recompute()
+			}
+			return m, nil
 
 		case "tab":
 			if m.focus == focusLeft {
@@ -119,6 +153,25 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			}
 			return m, nil
+		}
+	}
+
+	// Handle text input when in search mode
+	if m.searchMode {
+		var cmd tea.Cmd
+		m.searchInput, cmd = m.searchInput.Update(msg)
+		cmds = append(cmds, cmd)
+
+		// Update search query and recompute if changed
+		newQuery := m.searchInput.Value()
+		if newQuery != m.searchQuery {
+			m.searchQuery = newQuery
+			m.recompute()
+			if m.searchQuery == "" {
+				m.status = "Search mode: type to filter notes"
+			} else {
+				m.status = fmt.Sprintf("Search: %s (%d matches)", m.searchQuery, len(m.candidates))
+			}
 		}
 	}
 
