@@ -65,7 +65,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.searchInput.Blur()
 				m.leftVp.Height = m.h - 8 // Reset viewport height
 				m.status = "Search mode exited"
-				// Don't clear searchQuery or recompute to preserve results
+				// Don't clear searchQuery, but recompute to preserve filtered results
+				m.recompute()
 			} else {
 				return m, tea.Quit
 			}

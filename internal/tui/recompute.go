@@ -28,8 +28,8 @@ func (m *Model) recompute() {
 		}
 		rel := notes.RelPath(filepath.Dir(target.Path), n.Path)
 		if !notes.ContainsLink(content, rel, n.Title) {
-			// Apply search filter if search mode is active
-			if m.searchMode && m.searchQuery != "" {
+			// Apply search filter if search query exists (regardless of search mode)
+			if m.searchQuery != "" {
 				if fuzzyMatch(n, m.searchQuery) {
 					cands = append(cands, n)
 				}
