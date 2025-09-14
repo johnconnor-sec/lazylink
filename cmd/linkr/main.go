@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/johnconnor-sec/note-linkr/internal/notes"
 	"github.com/johnconnor-sec/note-linkr/internal/tui"
@@ -14,6 +15,7 @@ import (
 
 func main() {
 	vaultFlag := flag.String("vault", "", "path to Obsidian vault (or set ZK_NOTEBOOK_DIR env)")
+	ignoreFlag := flag.String("ignore-dir", "", "comma-separated list of directories to ignore (e.g., .obsidian,.git)")
 	flag.Parse()
 
 	vault := *vaultFlag
@@ -32,8 +34,17 @@ func main() {
 		os.Exit(1)
 	}
 
+	// Parse ignore list
+	var ignores []string
+	if *ignoreFlag != "" {
+		ignores = strings.Split(*ignoreFlag, ",")
+		for i, ig := range ignores {
+			ignores[i] = strings.TrimSpace(ig)
+		}
+	}
+
 	// Load notes once at start.
-	all, err := notes.ScanVault(vault)
+	all, err := notes.ScanVault(vault, ignores)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "scan error: %v\n", err)
 		os.Exit(1)

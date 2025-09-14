@@ -10,11 +10,12 @@ import (
 )
 
 type Note struct {
-	Path  string
-	Title string
+	Path    string
+	Title   string
+	Content string
 }
 
-func ScanVault(vault string) ([]Note, error) {
+func ScanVault(vault string, ignores []string) ([]Note, error) {
 	var out []Note
 	err := filepath.WalkDir(vault, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
@@ -25,12 +26,21 @@ func ScanVault(vault string) ([]Note, error) {
 			if base == ".obsidian" || strings.HasPrefix(base, ".git") {
 				return filepath.SkipDir
 			}
+			for _, ig := range ignores {
+				if base == ig {
+					return filepath.SkipDir
+				}
+			}
+
 			return nil
 		}
 		if strings.HasSuffix(strings.ToLower(d.Name()), ".md") {
+			rel, _ := filepath.Rel(vault, path)
+			content := readContent(path)
 			out = append(out, Note{
-				Path:  path,
-				Title: firstTitleOrFilename(path),
+				Path:    rel,
+				Title:   firstTitleOrFilename(path),
+				Content: content,
 			})
 		}
 		return nil
@@ -64,6 +74,18 @@ func Read(path string) string {
 	b, err := os.ReadFile(path)
 	if err != nil {
 		return ""
+	}
+	return string(b)
+}
+
+func readContent(path string) string {
+	b, err := os.ReadFile(path)
+	if err != nil {
+		return ""
+	}
+	// Limit to first 10KB to avoid memory issues
+	if len(b) > 10240 {
+		b = b[:10240]
 	}
 	return string(b)
 }

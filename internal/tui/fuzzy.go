@@ -1,10 +1,15 @@
 package tui
 
-import "strings"
+import (
+	"strings"
+
+	"github.com/johnconnor-sec/note-linkr/internal/notes"
+)
 
 // fuzzyMatch performs fuzzy string matching for search functionality
 // Returns true if the query matches the text using flexible substring matching
-func fuzzyMatch(text, query string) bool {
+func fuzzyMatch(note notes.Note, query string) bool {
+	text := note.Title + " " + note.Content
 	if query == "" {
 		return true
 	}
