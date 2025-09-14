@@ -184,6 +184,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.status = "Insert failed"
 				} else {
 					m.status = fmt.Sprintf("Linked: %s → %s", target.Title, selected.Title)
+					// Push to undo stack
+					m.undoStack = append(m.undoStack, UndoAction{TargetPath: target.Path, LinkTitle: selected.Title, Rel: rel})
 					m.recompute()
 				}
 				return m, nil

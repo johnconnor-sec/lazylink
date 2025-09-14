@@ -16,6 +16,12 @@ const (
 	focusRight
 )
 
+type UndoAction struct {
+	TargetPath string
+	LinkTitle  string
+	Rel        string
+}
+
 type Model struct {
 	vault      string
 	notes      []notes.Note
@@ -34,6 +40,9 @@ type Model struct {
 	searchInput textinput.Model
 	searchMode  bool
 	searchQuery string
+
+	// Undo functionality
+	undoStack []UndoAction
 }
 
 func New(vault string, all []notes.Note) Model {

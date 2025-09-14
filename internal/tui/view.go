@@ -19,7 +19,7 @@ func (m Model) View() string {
 	err := lipgloss.NewStyle().Foreground(lipgloss.Color("196"))
 
 	header := title.Render("Linkr — Obsidian linker")
-	help := subtle.Render("[↑/k, ↓/j] move  [Enter] link  [n/p] target  [Tab] focus  [/] search  [r] rescan  [q] quit")
+	help := subtle.Render("[↑/k, ↓/j] move  [Enter] link  [n/p] target  [Tab] focus  [/] search  [r] rescan  [u] undo  [q] quit")
 
 	// left pane
 	var leftContent strings.Builder

@@ -104,3 +104,26 @@ func InsertMarkdownLink(path string, linkTitle string, rel string) error {
 	content += "- [" + linkTitle + "](" + rel + ")\n"
 	return os.WriteFile(path, []byte(content), 0o644)
 }
+
+func RemoveMarkdownLink(path string, linkTitle string, rel string) error {
+	content := Read(path)
+	if content == "" {
+		return nil // File empty or not found, nothing to remove
+	}
+	lines := strings.Split(content, "\n")
+	linkLine := "- [" + linkTitle + "](" + rel + ")"
+	var newLines []string
+	removed := false
+	for _, line := range lines {
+		if strings.TrimSpace(line) == linkLine {
+			removed = true
+			continue // Skip this line
+		}
+		newLines = append(newLines, line)
+	}
+	if !removed {
+		return nil // Link not found, nothing to remove
+	}
+	newContent := strings.Join(newLines, "\n")
+	return os.WriteFile(path, []byte(newContent), 0o644)
+}
