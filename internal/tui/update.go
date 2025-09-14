@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/johnconnor-sec/note-linkr/internal/notes"
+	"github.com/johnconnor-sec/lazylink/internal/notes"
 
 	tea "github.com/charmbracelet/bubbletea"
 )

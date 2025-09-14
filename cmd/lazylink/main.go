@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/johnconnor-sec/note-linkr/internal/notes"
-	"github.com/johnconnor-sec/note-linkr/internal/tui"
+	"github.com/johnconnor-sec/lazylink/internal/notes"
+	"github.com/johnconnor-sec/lazylink/internal/tui"
 
 	tea "github.com/charmbracelet/bubbletea"
 )

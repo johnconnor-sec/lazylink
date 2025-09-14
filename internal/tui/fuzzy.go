@@ -3,7 +3,7 @@ package tui
 import (
 	"strings"
 
-	"github.com/johnconnor-sec/note-linkr/internal/notes"
+	"github.com/johnconnor-sec/lazylink/internal/notes"
 )
 
 // fuzzyMatch performs fuzzy string matching for search functionality

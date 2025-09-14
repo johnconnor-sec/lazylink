@@ -1,4 +1,4 @@
-module github.com/johnconnor-sec/note-linkr
+module github.com/johnconnor-sec/lazylink
 
 go 1.25.0
 
