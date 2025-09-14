@@ -61,12 +61,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.searchMode {
 				// Exit search mode
 				m.searchMode = false
-				m.searchQuery = ""
-				m.searchInput.Reset()
 				m.searchInput.Blur()
 				m.leftVp.Height = m.h - 8 // Reset viewport height
-				m.status = "Search cleared"
-				m.recompute()
+				m.status = "Search mode exited"
+				// Don't clear searchQuery or recompute to preserve results
 			} else {
 				return m, tea.Quit
 			}
@@ -80,68 +78,104 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.leftVp.Height = m.h - 11 // Adjust for search input
 				m.status = "Search mode: type to filter notes"
 				m.recompute()
+			} else {
+				// Exit search mode and clear results
+				m.searchMode = false
+				m.searchQuery = ""
+				m.searchInput.Reset()
+				m.searchInput.Blur()
+				m.leftVp.Height = m.h - 8 // Reset viewport height
+				m.status = "Search cleared"
+				m.recompute()
 			}
 			return m, nil
 
 		case "tab":
-			if m.focus == focusLeft {
-				m.focus = focusRight
-			} else {
-				m.focus = focusLeft
+			if !m.searchMode {
+				if m.focus == focusLeft {
+					m.focus = focusRight
+				} else {
+					m.focus = focusLeft
+				}
+				m.status = fmt.Sprintf("Focus: %v", m.focus)
+				return m, nil
 			}
-			m.status = fmt.Sprintf("Focus: %v", m.focus)
-			return m, nil
 
 		case "r":
-			if all, err := notes.ScanVault(m.vault); err == nil {
-				m.notes = all
-				m.targetIdx = 0
-				m.leftIdx = 0
-				m.recompute()
-				m.status = "Rescanned."
+			if !m.searchMode {
+				if all, err := notes.ScanVault(m.vault); err == nil {
+					m.notes = all
+					m.targetIdx = 0
+					m.leftIdx = 0
+					m.recompute()
+					m.status = "Rescanned."
+				}
+				return m, nil
 			}
-			return m, nil
 
 		case "n":
-			if len(m.notes) > 0 {
+			if !m.searchMode && len(m.notes) > 0 {
 				m.targetIdx = (m.targetIdx + 1) % len(m.notes)
 				m.leftIdx = 0
 				m.recompute()
+				return m, nil
 			}
-			return m, nil
 
 		case "p":
-			if len(m.notes) > 0 {
+			if !m.searchMode && len(m.notes) > 0 {
 				m.targetIdx = (m.targetIdx - 1 + len(m.notes)) % len(m.notes)
 				m.leftIdx = 0
 				m.recompute()
+				return m, nil
 			}
-			return m, nil
 
 		case "up", "k":
-			if m.focus == focusLeft {
-				if len(m.candidates) > 0 && m.leftIdx > 0 {
-					m.leftIdx--
-					m.recompute()
+			if !m.searchMode {
+				if m.focus == focusLeft {
+					if len(m.candidates) > 0 && m.leftIdx > 0 {
+						m.leftIdx--
+						m.recompute()
+						return m, nil
+					}
+				} else {
+					m.rightVp.ScrollUp(1)
 				}
-			} else {
-				m.rightVp.ScrollUp(1)
+				return m, nil
 			}
-			return m, nil
 
 		case "down", "j":
-			if m.focus == focusLeft {
-				if len(m.candidates) > 0 && m.leftIdx < len(m.candidates)-1 {
-					m.leftIdx++
+			if !m.searchMode {
+				if m.focus == focusLeft {
+					if len(m.candidates) > 0 && m.leftIdx < len(m.candidates)-1 {
+						m.leftIdx++
+						m.recompute()
+						return m, nil
+					}
+				} else {
+					m.rightVp.ScrollDown(1)
+				}
+				return m, nil
+			}
+
+		case "u":
+			if !m.searchMode && len(m.undoStack) > 0 {
+				last := m.undoStack[len(m.undoStack)-1]
+				m.undoStack = m.undoStack[:len(m.undoStack)-1] // Pop
+				if err := notes.RemoveMarkdownLink(last.TargetPath, last.LinkTitle, last.Rel); err != nil {
+					m.err = err
+					m.status = "Undo failed"
+				} else {
+					m.status = fmt.Sprintf("Undid link: %s", last.LinkTitle)
 					m.recompute()
 				}
-			} else {
-				m.rightVp.ScrollDown(1)
+				return m, nil
+			} else if !m.searchMode {
+				m.status = "Nothing to undo"
+				return m, nil
 			}
-			return m, nil
 
 		case "enter":
-			if m.focus == focusLeft && len(m.candidates) > 0 {
+			if !m.searchMode && m.focus == focusLeft && len(m.candidates) > 0 {
 				target := m.notes[m.targetIdx]
 				selected := m.candidates[m.leftIdx]
 				rel := notes.RelPath(filepath.Dir(target.Path), selected.Path)
@@ -152,8 +186,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.status = fmt.Sprintf("Linked: %s → %s", target.Title, selected.Title)
 					m.recompute()
 				}
+				return m, nil
 			}
-			return m, nil
 		}
 	}
 
