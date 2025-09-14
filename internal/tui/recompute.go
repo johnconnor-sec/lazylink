@@ -7,6 +7,7 @@ import (
 
 	"github.com/johnconnor-sec/note-linkr/internal/notes"
 
+	"github.com/charmbracelet/glamour"
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -68,6 +69,6 @@ func (m *Model) recompute() {
 	m.leftVp.SetYOffset(clamp(m.leftIdx-m.leftVp.Height/2, 0, max(0, len(m.candidates)-m.leftVp.Height)))
 
 	// Right pane
-	rightPreview := preview(content, 3000)
+	rightPreview, _ := glamour.Render(content, "dark")
 	m.rightVp.SetContent(rightPreview)
 }
