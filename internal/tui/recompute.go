@@ -18,7 +18,7 @@ func (m *Model) recompute() {
 		return
 	}
 	target := m.notes[m.targetIdx]
-	content := notes.Read(target.Path)
+	content := notes.Read(filepath.Join(m.vault, target.Path))
 
 	// Candidates = notes not linked in target AND matching search query
 	var cands []notes.Note
@@ -38,15 +38,28 @@ func (m *Model) recompute() {
 			}
 		}
 	}
+	if m.filterDir != "" {
+		var filtered []notes.Note
+		for _, n := range cands {
+			if filepath.Dir(n.Path) == m.filterDir {
+				filtered = append(filtered, n)
+			}
+		}
+		cands = filtered
+	}
 	m.candidates = cands
 	m.leftIdx = clamp(m.leftIdx, 0, max(0, len(m.candidates)-1))
 
 	// Left pane
-	selected := lipgloss.NewStyle().Bold(true).Underline(true)
+	selected := lipgloss.NewStyle().Bold(true).Underline(true).Foreground(lipgloss.AdaptiveColor{"#0fffff", "#addddd"})
 	focus := lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
 
 	var left strings.Builder
-	left.WriteString(lipgloss.NewStyle().Bold(true).Render("Unlinked Notes") + "\n")
+	if m.filterDir != "" {
+		left.WriteString(lipgloss.NewStyle().Bold(true).Render(fmt.Sprintf("Filtered Notes (dir: %s)", m.filterDir)) + "\n")
+	} else {
+		left.WriteString(lipgloss.NewStyle().Bold(true).Render("Unlinked Notes") + "\n")
+	}
 	left.WriteString(lipgloss.NewStyle().Faint(true).Render(fmt.Sprintf("Target: %s", m.notes[m.targetIdx].Title)) + "\n\n")
 
 	if len(m.candidates) == 0 {
@@ -68,25 +81,11 @@ func (m *Model) recompute() {
 	m.leftVp.SetYOffset(clamp(m.leftIdx-m.leftVp.Height/2, 0, max(0, len(m.candidates)-m.leftVp.Height)))
 
 	// Right pane
-	width := m.w - (m.w / 2) - 2
-	r, err := glamour.NewTermRenderer(
-		glamour.WithAutoStyle(),
-		glamour.WithWordWrap(width),
-		glamour.WithEnvironmentConfig(),
-	)
-	if err != nil {
-		// Fallback to plain text preview
-		rightPreview := preview(content, 3000)
-		m.rightVp.SetContent(rightPreview)
-		return
+	var rightPreview string
+	if content == "" {
+		rightPreview = "No content to preview."
+	} else {
+		rightPreview = preview(content, 3000)
 	}
-	rightPreview, err := r.Render(content)
-	if err != nil {
-		// Fallback to plain text preview
-		rightPreview := preview(content, 3000)
-		m.rightVp.SetContent(rightPreview)
-		return
-	}
-	m.rightVp.SetContent(rightPreview)
 	m.rightVp.SetContent(rightPreview)
 }

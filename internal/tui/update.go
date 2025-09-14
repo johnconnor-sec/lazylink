@@ -7,6 +7,7 @@ import (
 	"github.com/johnconnor-sec/lazylink/internal/notes"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 // Update handles the updating the TUI (via recompute)
@@ -76,7 +77,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.searchMode = true
 				m.searchInput.Focus()
 				m.leftVp.Height = m.h - 11 // Adjust for search input
-				m.status = "Search mode: type to filter notes"
+				m.status = lipgloss.NewStyle().Render("Search mode: type to filter notes")
 				m.recompute()
 			} else {
 				// Exit search mode and clear results
@@ -103,27 +104,88 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case "r":
 			if !m.searchMode {
-				if all, err := notes.ScanVault(m.vault); err == nil {
+				var ignores []string // For now, empty; could store in model if needed
+				if all, err := notes.ScanVault(m.vault, ignores); err == nil {
 					m.notes = all
 					m.targetIdx = 0
 					m.leftIdx = 0
+					m.filterDir = "" // Clear filter on rescan
 					m.recompute()
 					m.status = "Rescanned."
 				}
 				return m, nil
 			}
 
+		case "f":
+			if !m.searchMode {
+				if m.filterDir == "" {
+					// Set filter to current target's dir
+					m.filterDir = filepath.Dir(m.notes[m.targetIdx].Path)
+					m.status = fmt.Sprintf("Filtered to directory: %s", m.filterDir)
+				} else {
+					// Clear filter
+					m.filterDir = ""
+					m.status = "Filter cleared"
+					m.targetIdx = 0 // Only reset when clearing
+				}
+				m.leftIdx = 0
+				m.recompute()
+				return m, nil
+			}
+
 		case "n":
-			if !m.searchMode && len(m.notes) > 0 {
-				m.targetIdx = (m.targetIdx + 1) % len(m.notes)
+			if !m.searchMode {
+				// Cycle through filtered targets if filter active
+				var targets []int
+				for i, n := range m.notes {
+					if m.filterDir == "" || filepath.Dir(n.Path) == m.filterDir {
+						targets = append(targets, i)
+					}
+				}
+				if len(targets) == 0 {
+					return m, nil
+				}
+				currentTargetIdx := -1
+				for j, idx := range targets {
+					if idx == m.targetIdx {
+						currentTargetIdx = j
+						break
+					}
+				}
+				if currentTargetIdx == -1 {
+					currentTargetIdx = 0
+				}
+				nextIdx := (currentTargetIdx + 1) % len(targets)
+				m.targetIdx = targets[nextIdx]
 				m.leftIdx = 0
 				m.recompute()
 				return m, nil
 			}
 
 		case "p":
-			if !m.searchMode && len(m.notes) > 0 {
-				m.targetIdx = (m.targetIdx - 1 + len(m.notes)) % len(m.notes)
+			if !m.searchMode {
+				// Cycle through filtered targets if filter active
+				var targets []int
+				for i, n := range m.notes {
+					if m.filterDir == "" || filepath.Dir(n.Path) == m.filterDir {
+						targets = append(targets, i)
+					}
+				}
+				if len(targets) == 0 {
+					return m, nil
+				}
+				currentTargetIdx := -1
+				for j, idx := range targets {
+					if idx == m.targetIdx {
+						currentTargetIdx = j
+						break
+					}
+				}
+				if currentTargetIdx == -1 {
+					currentTargetIdx = 0
+				}
+				prevIdx := (currentTargetIdx - 1 + len(targets)) % len(targets)
+				m.targetIdx = targets[prevIdx]
 				m.leftIdx = 0
 				m.recompute()
 				return m, nil
@@ -161,7 +223,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if !m.searchMode && len(m.undoStack) > 0 {
 				last := m.undoStack[len(m.undoStack)-1]
 				m.undoStack = m.undoStack[:len(m.undoStack)-1] // Pop
-				if err := notes.RemoveMarkdownLink(last.TargetPath, last.LinkTitle, last.Rel); err != nil {
+				if err := notes.RemoveMarkdownLink(filepath.Join(m.vault, last.TargetPath), last.LinkTitle, last.Rel); err != nil {
 					m.err = err
 					m.status = "Undo failed"
 				} else {
@@ -176,10 +238,26 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case "enter":
 			if !m.searchMode && m.focus == focusLeft && len(m.candidates) > 0 {
+				// Link the selected note to the target
 				target := m.notes[m.targetIdx]
 				selected := m.candidates[m.leftIdx]
 				rel := notes.RelPath(filepath.Dir(target.Path), selected.Path)
-				if err := notes.InsertMarkdownLink(target.Path, selected.Title, rel); err != nil {
+				if err := notes.InsertMarkdownLink(filepath.Join(m.vault, target.Path), selected.Title, rel); err != nil {
+					m.err = err
+					m.status = "Insert failed"
+				} else {
+					m.status = fmt.Sprintf("Linked: %s → %s", target.Title, selected.Title)
+					// Push to undo stack
+					m.undoStack = append(m.undoStack, UndoAction{TargetPath: target.Path, LinkTitle: selected.Title, Rel: rel})
+					m.recompute()
+				}
+				return m, nil
+			}
+			if !m.searchMode && m.focus == focusLeft && len(m.candidates) > 0 {
+				target := m.notes[m.targetIdx]
+				selected := m.candidates[m.leftIdx]
+				rel := notes.RelPath(filepath.Dir(target.Path), selected.Path)
+				if err := notes.InsertMarkdownLink(filepath.Join(m.vault, target.Path), selected.Title, rel); err != nil {
 					m.err = err
 					m.status = "Insert failed"
 				} else {

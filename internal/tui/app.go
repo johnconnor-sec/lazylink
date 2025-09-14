@@ -43,6 +43,9 @@ type Model struct {
 
 	// Undo functionality
 	undoStack []UndoAction
+
+	// Directory filtering
+	filterDir string
 }
 
 func New(vault string, all []notes.Note) Model {
@@ -61,6 +64,7 @@ func New(vault string, all []notes.Note) Model {
 		searchInput: ti,
 		searchMode:  false,
 		searchQuery: "",
+		filterDir:   "",
 	}
 	m.recompute()
 	return m
