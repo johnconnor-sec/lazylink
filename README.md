@@ -1,26 +1,33 @@
-# note-linkr
+# lazylink
 
 [![Go Version](https://img.shields.io/badge/go-1.25+-blue.svg)](https://golang.org/dl/)
 
-A terminal-based tool for linking notes in markdown directories using fuzzy search and a TUI.
+A TUI for linking notes in markdown directories. Featuring filtering and search
 
 ## Installation
 
-Requires Go 1.25+.
-
 ```bash
-git clone https://github.com/johnconnor-sec/note-linkr.git
-cd note-linkr
-go build -o linkr ./cmd/linkr
+git clone https://github.com/johnconnor-sec/lazylink.git
+cd lazylink
+go build -o lazylink ./cmd/lazylink/
 ```
 
 ## Usage
 
 ```bash
-./linkr --vault /path/to/markdown/dir/
+./lazylink --vault /path/to/markdown/dir/ --ignore-dirs comma,separated,ignored,dirs
 ```
 
-Or set the `ZK_NOTEBOOK_DIR` environment variable.
+Or set the `$ZK_NOTEBOOK_DIR` environment variable.
+
+You can place the binary in your `$GOBIN` to make it globally available
+
+Create an alias if you run in the same vault or ignore the same directories repeatedly
+
+```bash
+# In your bashrc or zshrc
+alias ll="lazylink --vault /path/to/markdown/dir/ --ignore-dirs comma,separated,ignored,dirs"
+```
 
 ## Features
 
@@ -29,6 +36,7 @@ Or set the `ZK_NOTEBOOK_DIR` environment variable.
 - Insert markdown links into "## Related" section
 - Undo last link addition
 - Rescan vault for changes
+- Filter directories
 
 ## Controls
 
@@ -37,6 +45,7 @@ Or set the `ZK_NOTEBOOK_DIR` environment variable.
 - `n/p`: Change target note
 - `Tab`: Switch focus between panes
 - `/`: Enter search mode
+- `f`: Filter Directory
 - `r`: Rescan vault
 - `u`: Undo last link
 - `q`: Quit
