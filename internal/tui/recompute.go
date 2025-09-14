@@ -69,6 +69,25 @@ func (m *Model) recompute() {
 	m.leftVp.SetYOffset(clamp(m.leftIdx-m.leftVp.Height/2, 0, max(0, len(m.candidates)-m.leftVp.Height)))
 
 	// Right pane
-	rightPreview, _ := glamour.Render(content, "dark")
+	width := m.w - (m.w / 2) - 2
+	r, err := glamour.NewTermRenderer(
+		glamour.WithAutoStyle(),
+		glamour.WithWordWrap(width),
+		glamour.WithEnvironmentConfig(),
+	)
+	if err != nil {
+		// Fallback to plain text preview
+		rightPreview := preview(content, 3000)
+		m.rightVp.SetContent(rightPreview)
+		return
+	}
+	rightPreview, err := r.Render(content)
+	if err != nil {
+		// Fallback to plain text preview
+		rightPreview := preview(content, 3000)
+		m.rightVp.SetContent(rightPreview)
+		return
+	}
+	m.rightVp.SetContent(rightPreview)
 	m.rightVp.SetContent(rightPreview)
 }

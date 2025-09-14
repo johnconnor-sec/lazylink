@@ -1,5 +1,7 @@
 package tui
 
+import "github.com/charmbracelet/glamour"
+
 func clamp(v, lo, hi int) int {
 	if v < lo {
 		return lo
@@ -18,8 +20,12 @@ func max(a, b int) int {
 }
 
 func preview(s string, maxChars int) string {
+	rendered, err := glamour.Render(s, "dark")
+	if err != nil {
+		rendered = s // Fallback to plaintext if err
+	}
 	if len(s) <= maxChars {
-		return s
+		return rendered
 	}
 	return s[:maxChars] + "\n…"
 }

@@ -12,11 +12,11 @@ func (m Model) View() string {
 		return "Loading…"
 	}
 
-	title := lipgloss.NewStyle().Bold(true)
-	subtle := lipgloss.NewStyle().Faint(true)
+	title := lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#3abe80"))
+	subtle := lipgloss.NewStyle().Faint(true).Foreground(lipgloss.Color("#888888"))
 	border := lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).Padding(0, 1)
 	ok := lipgloss.NewStyle().Foreground(lipgloss.Color("42"))
-	err := lipgloss.NewStyle().Foreground(lipgloss.Color("196"))
+	err := lipgloss.NewStyle().Foreground(lipgloss.Color("#E74C3C"))
 
 	header := title.Render("Linkr — Obsidian linker")
 	help := subtle.Render("[↑/k, ↓/j] move  [Enter] link  [n/p] target  [Tab] focus  [/] search  [r] rescan  [u] undo  [q] quit")
