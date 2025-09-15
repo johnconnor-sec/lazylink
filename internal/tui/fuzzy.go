@@ -17,12 +17,19 @@ func fuzzyMatch(note notes.Note, query string) bool {
 	text = strings.ToLower(text)
 	query = strings.ToLower(query)
 
-	// Exact match gets highest priority
+	// Use fuzzysearch, it's better
+	// RankMatch returns a score (0-1); use max helper
+	// threshold := max(len(query)-1, 1)
+	// if score := fuzzy.RankMatch(query, text); score > threshold {
+	// 	return true
+	// }
+
+	// Fallback: Exact match
 	if strings.Contains(text, query) {
 		return true
 	}
 
-	// Split query into words and check if all words are present
+	// Fallback: Split query into words and check if all words are present
 	queryWords := strings.Fields(query)
 	if len(queryWords) > 1 {
 		allWordsMatch := true
@@ -37,7 +44,7 @@ func fuzzyMatch(note notes.Note, query string) bool {
 		}
 	}
 
-	// Check for acronym match (first letters of words)
+	// Fallback: Check for acronym match (first letters of words)
 	if len(query) >= 2 {
 		textWords := strings.Fields(text)
 		if len(textWords) >= len(query) {
