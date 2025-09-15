@@ -1,6 +1,12 @@
 package tui
 
-import "github.com/charmbracelet/glamour"
+import (
+	"fmt"
+	"path/filepath"
+
+	"github.com/charmbracelet/glamour"
+	"github.com/johnconnor-sec/lazylink/internal/notes"
+)
 
 func clamp(v, lo, hi int) int {
 	if v < lo {
@@ -28,4 +34,19 @@ func preview(s string, maxChars int) string {
 		return rendered
 	}
 	return s[:maxChars] + "\n…"
+}
+
+func (m *Model) linkSelectedNote() {
+	target := m.notes[m.targetIdx]
+	selected := m.candidates[m.leftIdx]
+	rel := notes.RelPath(filepath.Dir(target.Path), selected.Path)
+	if err := notes.InsertMarkdownLink(filepath.Join(m.vault, target.Path), selected.Title, rel); err != nil {
+		m.err = err
+		m.status = "Insert failed"
+	} else {
+		m.status = fmt.Sprintf("Linked: %s → %s", target.Title, selected.Title)
+		// Push to undo stack
+		m.undoStack = append(m.undoStack, UndoAction{TargetPath: target.Path, LinkTitle: selected.Title, Rel: rel})
+		m.recompute()
+	}
 }

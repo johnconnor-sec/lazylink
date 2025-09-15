@@ -239,34 +239,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case "enter":
 			if !m.searchMode && m.focus == focusLeft && len(m.candidates) > 0 {
-				// Link the selected note to the target
-				target := m.notes[m.targetIdx]
-				selected := m.candidates[m.leftIdx]
-				rel := notes.RelPath(filepath.Dir(target.Path), selected.Path)
-				if err := notes.InsertMarkdownLink(filepath.Join(m.vault, target.Path), selected.Title, rel); err != nil {
-					m.err = err
-					m.status = "Insert failed"
-				} else {
-					m.status = fmt.Sprintf("Linked: %s → %s", target.Title, selected.Title)
-					// Push to undo stack
-					m.undoStack = append(m.undoStack, UndoAction{TargetPath: target.Path, LinkTitle: selected.Title, Rel: rel})
-					m.recompute()
-				}
-				return m, nil
-			}
-			if !m.searchMode && m.focus == focusLeft && len(m.candidates) > 0 {
-				target := m.notes[m.targetIdx]
-				selected := m.candidates[m.leftIdx]
-				rel := notes.RelPath(filepath.Dir(target.Path), selected.Path)
-				if err := notes.InsertMarkdownLink(filepath.Join(m.vault, target.Path), selected.Title, rel); err != nil {
-					m.err = err
-					m.status = "Insert failed"
-				} else {
-					m.status = fmt.Sprintf("Linked: %s → %s", target.Title, selected.Title)
-					// Push to undo stack
-					m.undoStack = append(m.undoStack, UndoAction{TargetPath: target.Path, LinkTitle: selected.Title, Rel: rel})
-					m.recompute()
-				}
+				m.linkSelectedNote()
 				return m, nil
 			}
 		}
