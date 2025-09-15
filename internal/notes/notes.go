@@ -89,6 +89,19 @@ func readContent(path string) string {
 	return string(b)
 }
 
+func CachedRead(cache map[string]string, path string) string {
+	if content, exists := cache[path]; exists {
+		return content
+	}
+	content := Read(path)
+	cache[path] = content
+	return content
+}
+
+func InvalidateCache(cache map[string]string, path string) {
+	delete(cache, path)
+}
+
 func RelPath(fromDir, toFile string) string {
 	rel, err := filepath.Rel(fromDir, toFile)
 	if err != nil {

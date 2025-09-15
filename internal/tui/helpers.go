@@ -47,6 +47,8 @@ func (m *Model) linkSelectedNote() {
 		m.status = fmt.Sprintf("Linked: %s → %s", target.Title, selected.Title)
 		// Push to undo stack
 		m.undoStack = append(m.undoStack, UndoAction{TargetPath: target.Path, LinkTitle: selected.Title, Rel: rel})
+		// Invalidate cache for the modified file
+		notes.InvalidateCache(m.fileCache, filepath.Join(m.vault, target.Path))
 		m.recompute()
 	}
 }

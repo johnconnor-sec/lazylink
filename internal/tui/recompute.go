@@ -18,7 +18,7 @@ func (m *Model) recompute() {
 		return
 	}
 	target := m.notes[m.targetIdx]
-	content := notes.Read(filepath.Join(m.vault, target.Path))
+	content := notes.CachedRead(m.fileCache, filepath.Join(m.vault, target.Path))
 
 	// Candidates = notes not linked in target AND matching search query
 	var cands []notes.Note

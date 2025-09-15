@@ -36,6 +36,8 @@ type Model struct {
 	leftVp  viewport.Model
 	rightVp viewport.Model
 
+	fileCache map[string]string
+
 	// Search functionality
 	searchInput textinput.Model
 	searchMode  bool
@@ -61,6 +63,7 @@ func New(vault string, all []notes.Note) Model {
 		focus:       focusLeft,
 		leftVp:      viewport.Model{Width: 60, Height: 40},
 		rightVp:     viewport.Model{Width: 60, Height: 40},
+		fileCache:   make(map[string]string),
 		searchInput: ti,
 		searchMode:  false,
 		searchQuery: "",
