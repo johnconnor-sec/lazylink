@@ -10,6 +10,8 @@ import (
 	"strings"
 )
 
+const MaxContentSize = 10 * 1024
+
 type Note struct {
 	Path    string
 	Title   string
@@ -83,8 +85,8 @@ func readContent(path string) string {
 		return ""
 	}
 	// Limit to first 10KB to avoid memory issues
-	if len(b) > 10240 {
-		b = b[:10240]
+	if len(b) > MaxContentSize {
+		b = b[:MaxContentSize]
 	}
 	return string(b)
 }
