@@ -5,6 +5,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"slices"
 	"sort"
 	"strings"
 )
@@ -23,13 +24,11 @@ func ScanVault(vault string, ignores []string) ([]Note, error) {
 		}
 		if d.IsDir() {
 			base := filepath.Base(path)
-			if base == ".obsidian" || strings.HasPrefix(base, ".git") {
+			if base == ".obsidian" || strings.HasPrefix(base, ".git") || strings.HasPrefix(base, ".zk") {
 				return filepath.SkipDir
 			}
-			for _, ig := range ignores {
-				if base == ig {
-					return filepath.SkipDir
-				}
+			if slices.Contains(ignores, base) {
+				return filepath.SkipDir
 			}
 
 			return nil
