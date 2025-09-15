@@ -52,3 +52,29 @@ func (m *Model) linkSelectedNote() {
 		m.recompute()
 	}
 }
+
+func (m *Model) cycleTarget(delta int) {
+	var targets []int
+	for i, n := range m.notes {
+		if m.filterDir == "" || filepath.Dir(n.Path) == m.filterDir {
+			targets = append(targets, i)
+		}
+	}
+	if len(targets) == 0 {
+		return
+	}
+	currentTargetIdx := -1
+	for j, idx := range targets {
+		if idx == m.targetIdx {
+			currentTargetIdx = j
+			break
+		}
+	}
+	if currentTargetIdx == -1 {
+		currentTargetIdx = 0
+	}
+	nextIdx := (currentTargetIdx + delta + len(targets)) % len(targets)
+	m.targetIdx = targets[nextIdx]
+	m.leftIdx = 0
+	m.recompute()
+}

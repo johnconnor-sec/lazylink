@@ -137,58 +137,14 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "n":
 			if !m.searchMode {
 				// Cycle through filtered targets if filter active
-				var targets []int
-				for i, n := range m.notes {
-					if m.filterDir == "" || filepath.Dir(n.Path) == m.filterDir {
-						targets = append(targets, i)
-					}
-				}
-				if len(targets) == 0 {
-					return m, nil
-				}
-				currentTargetIdx := -1
-				for j, idx := range targets {
-					if idx == m.targetIdx {
-						currentTargetIdx = j
-						break
-					}
-				}
-				if currentTargetIdx == -1 {
-					currentTargetIdx = 0
-				}
-				nextIdx := (currentTargetIdx + 1) % len(targets)
-				m.targetIdx = targets[nextIdx]
-				m.leftIdx = 0
-				m.recompute()
+				m.cycleTarget(1)
 				return m, nil
 			}
 
 		case "p":
 			if !m.searchMode {
 				// Cycle through filtered targets if filter active
-				var targets []int
-				for i, n := range m.notes {
-					if m.filterDir == "" || filepath.Dir(n.Path) == m.filterDir {
-						targets = append(targets, i)
-					}
-				}
-				if len(targets) == 0 {
-					return m, nil
-				}
-				currentTargetIdx := -1
-				for j, idx := range targets {
-					if idx == m.targetIdx {
-						currentTargetIdx = j
-						break
-					}
-				}
-				if currentTargetIdx == -1 {
-					currentTargetIdx = 0
-				}
-				prevIdx := (currentTargetIdx - 1 + len(targets)) % len(targets)
-				m.targetIdx = targets[prevIdx]
-				m.leftIdx = 0
-				m.recompute()
+				m.cycleTarget(-1)
 				return m, nil
 			}
 
