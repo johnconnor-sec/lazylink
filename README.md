@@ -4,6 +4,8 @@
 
 A TUI for linking notes in markdown directories. Featuring filtering and search
 
+![demo](output.gif)
+
 ## Installation
 
 ```bash
