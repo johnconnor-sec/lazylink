@@ -1,1 +1,3 @@
-# Test Note in Subdir\n\nThis is content for search.
+# Test Note in Subdir
+
+This is content for search.
